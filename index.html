@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PictoChat Drawing App</title>
+    <style>
+      :root {
+        --main-bg: #c0c0c0;
+        --canvas-bg: #fffcb0;
+        --border-color: #808080;
+        --button-color: #e0e0e0;
+        --button-active: #a0a0a0;
+        --header-color: #ffff80;
+        --ds-font: monospace;
+      }
+
+      @font-face {
+        font-family: "DSPixel";
+        src: url("data:font/woff2;base64,d09GMgABAAAAAAWAAA0AAAAADDwAAAUqAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP0ZGVE0cGiAGVgCDUggyCYRlEQgKhEyEXQsQAAE2AiQDPAQgBY1BB0IGGxYLyB5GUTyQ7ONgbMOvjgH7b45iI1Q6H82b1Y/Nra0LlS6UNmgSNJFJjdTr8w+5+/+bqdpmLCErJtY0TiWR0EQiQyGTWiER/uG2zT+HgwvrhQo2sVJhA6tQcCxrYWChbew4VgQWClx4Zz3wgv3h7dMPCAAq1oIUAEBl1q4LALD46z8BAMDlj6cJAMDwfx4AgPQXACBADaAABAQARN7S3X0AUAsAsLE2FwAMzC3sASR87xdgZGJpD7AwMgEA/IfABgBUhgAAMAEAJgOA+C8AdnI5KysWYwAYMIA2S1vAzNLBCeDwX11Ae3/YzZ1Nvpzu7Izu9ZEPj+4f3dw66f4u8vbO4Z3toZ3Nga31vvW1rtXl9pXFloX5Brm0cX66cXoyMzKYHBpI9vXEuzrDrW3+xma3z+8MBBxOf8DkcJqcLr0N5hcC+Z9iV3Tc1dTiHG9yeALO4Ulb45S9YdLeOGlrCF8c0vI3XXzCnbrncvGHQjfCrsbLjvqrQ+3XX1/qGnmxc+B+V9vt9pYbnV03e/tujYxPT03L5fK1jY2NTWVtfX191e3xOBzOmppofX28oyPZ1pbsaI939SYHhmO9A5Gu3tDl7mBHj7+lw9fc5m1q9dQ3uzxhl9vnYfPm2OfhsFvTomVVtaxPW4uGbAVb0pK1IcJSkhQsxgvmohEpy/JGY17QF7JqbUYTK2cNGl1OayirWbO0JlCQZgXVvCA32D9wfFdXmR/IcDxLczTLkhxJCQTJ4CRLkixFsRTFUgTN4CzFsJyIdJyI50Q8JxE5icgBiZZItETCgZEnMkyeIGgpnSOIvFYrFQqqgGJYgecoAilwIs9SBFsgsYKIMRzO0TjHYCwNWBZwHMawkGUhy8GsoUBj1pKAKSXGiHW8kWxrLMTqtWUzAaZ8HvQ65Kx5KW0pIxYMGcG4kYwbwaCVDdvYiIPLuNmchwuGwUQeKnqgQgAqh4zliF1WjtnnlFNBddmrrYSsNYjQmUu0ZG1ZcD8G3E6R2+fwxajPV3a7KI+bBm6G8xrKrkLZXSx5StB4ZCyWnCWGh1AxVfOp9jPD0dzQ7WZKEtQ6vKwlVuOxNgZqMu2N2e7mbHdLQKGVMeHcS90uZDKGQl5fyMNivlDIlTFbsGStmrY22LLWcp/dn+tLZ1MjqdRQKjWQSvVnMn3ZVF8+053PBgp5WMgj2bwvX/Dmi+5C0V7KWwvZvnRmcHZ6XLmhXN9SVp8qlfcqlPcrlY8rla93dz89PPz08PDJwcG327ufCJXKXbHyuVT5Usx/xuU/Z7MPKzs70fa2YWdHu7Oj2tnRvYgd9GrHqFrXrK7o1lYN6+umjY3Sx8kAGz0RP1JdzLRVdbg7ydaSO+vZFgGXcPWVCPgwLQPSgFa/z9eKYbdL8F3RRdQxfcwcI0/2tXRV9zV3/a1QVNUKAAC4gD+oIlcAAJPwBwBQBVQCAOI5F3FBpE0A2IAUABDYRToEAAArADi8p1nYkUyGZ0nCGdGn4TQqVVLFYAV/DsA/Yeb+bEBYxsbUfNDcxnTO1MLUdNTM0mzUzML0L5EG+jMA33/iyfq3JJNKlTUwswKmFhamADMrU1MTMzMzEyMTIxMjEyMTExMA")
+          format("woff2");
+        font-weight: normal;
+        font-style: normal;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: "DSPixel", monospace;
+        user-select: none;
+        image-rendering: pixelated;
+      }
+
+      body {
+        background-color: var(--main-bg);
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        max-height: 100vh;
+        overflow: hidden;
+        touch-action: none;
+      }
+
+      #app-container {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        width: 100%;
+        max-width: 600px;
+        margin: 0 auto;
+        border: 4px solid var(--border-color);
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        image-rendering: pixelated;
+      }
+
+      #header {
+        background-color: var(--header-color);
+        padding: 8px;
+        border-bottom: 2px solid var(--border-color);
+        font-size: 24px;
+        font-weight: bold;
+        text-shadow: 1px 1px 0 #ddd;
+        letter-spacing: 1px;
+      }
+
+      #canvas-container {
+        position: relative;
+        flex-grow: 1;
+        background-color: var(--canvas-bg);
+        overflow: hidden;
+        border-bottom: 2px solid var(--border-color);
+      }
+
+      #drawing-canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        image-rendering: pixelated;
+      }
+
+      #toolbar {
+        display: flex;
+        justify-content: space-around;
+        padding: 8px;
+        background-color: var(--main-bg);
+        border-bottom: 2px solid var(--border-color);
+      }
+
+      #brush-sizes {
+        display: flex;
+        justify-content: space-around;
+        padding: 4px;
+        background-color: var(--main-bg);
+        border-bottom: 2px solid var(--border-color);
+      }
+
+      .brush-size {
+        width: 32px;
+        height: 32px;
+        background-color: var(--button-color);
+        border: 2px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        position: relative;
+      }
+
+      .brush-size.active {
+        background-color: var(--button-active);
+      }
+
+      .brush-size-indicator {
+        background-color: black;
+        border-radius: 0;
+      }
+
+      .brush-size-small .brush-size-indicator {
+        width: 4px;
+        height: 4px;
+      }
+
+      .brush-size-medium .brush-size-indicator {
+        width: 8px;
+        height: 8px;
+      }
+
+      .brush-size-large .brush-size-indicator {
+        width: 12px;
+        height: 12px;
+      }
+
+      .tool {
+        width: 40px;
+        height: 40px;
+        background-color: var(--button-color);
+        border: 2px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+      }
+
+      .tool.active {
+        background-color: var(--button-active);
+      }
+
+      #undo-button {
+        width: 40px;
+        height: 40px;
+        background-color: var(--button-color);
+        border: 2px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+      }
+
+      .tool-icon {
+        width: 24px;
+        height: 24px;
+        pointer-events: none;
+      }
+
+      #download-options {
+        display: flex;
+        justify-content: space-around;
+        padding: 8px;
+        background-color: var(--main-bg);
+        border-bottom: 2px solid var(--border-color);
+      }
+
+      .download-button,
+      .clear-button {
+        padding: 8px 16px;
+        background-color: var(--button-color);
+        border: 2px solid var(--border-color);
+        font-size: 14px;
+        font-weight: bold;
+        cursor: pointer;
+        text-align: center;
+      }
+
+      #clear-container {
+        display: flex;
+        justify-content: center;
+        padding: 8px;
+        background-color: var(--main-bg);
+      }
+
+      .clear-button {
+        background-color: #ffaaaa;
+      }
+
+      /* Mobile optimization */
+      @media (max-width: 768px) {
+        #app-container {
+          width: 100%;
+          height: 100%;
+          border: none;
+          box-shadow: none;
+        }
+
+        .tool {
+          width: 36px;
+          height: 36px;
+        }
+
+        .tool-icon {
+          width: 20px;
+          height: 20px;
+        }
+
+        .download-button {
+          padding: 8px 12px;
+          font-size: 12px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app-container">
+      <div id="header">user123456</div>
+      <div id="canvas-container">
+        <canvas id="drawing-canvas"></canvas>
+      </div>
+      <div id="toolbar">
+        <div class="tool active" id="brush-tool">
+          <svg class="tool-icon" viewBox="0 0 24 24">
+            <path
+              d="M3,17.25V21h3.75L17.81,9.94l-3.75-3.75L3,17.25z M21.41,6.34l-3.75-3.75 c-0.39-0.39-1.02-0.39-1.41,0l-2.34,2.34l3.75,3.75l2.34-2.34C21.8,5.95,21.8,5.32,21.41,6.34z"
+              fill="black"
+            />
+          </svg>
+        </div>
+        <div class="tool" id="eraser-tool">
+          <svg class="tool-icon" viewBox="0 0 24 24">
+            <path
+              d="M15.14,3c-0.51,0-1.02,0.2-1.41,0.59L2.59,14.73c-0.78,0.78-0.78,2.05,0,2.83l4.24,4.24 c0.39,0.39,0.9,0.59,1.41,0.59h7.52c0.51,0,1.02-0.2,1.41-0.59l6.36-6.36c0.78-0.78,0.78-2.05,0-2.83l-7.52-7.52 C16.16,3.2,15.65,3,15.14,3z M18,19H8.83l-3.76-3.76l10.93-10.93L19.76,8.07L18,19z"
+              fill="black"
+            />
+          </svg>
+        </div>
+        <div class="tool" id="rotate-tool">
+          <svg class="tool-icon" viewBox="0 0 24 24">
+            <path
+              d="M7.34,6.41L5.92,4.99C7.84,3.74,9.94,3,12,3c5.52,0,10,4.48,10,10s-4.48,10-10,10 c-4.95,0-9.04-3.6-9.83-8.36h2.08c0.74,3.61,3.94,6.36,7.75,6.36c4.42,0,8-3.58,8-8s-3.58-8-8-8c-1.56,0-3.02,0.46-4.25,1.24 L9.17,7.64L7.34,6.41z M12,12l-5-5v10L12,12z"
+              fill="black"
+            />
+          </svg>
+        </div>
+        <div id="undo-button">
+          <svg class="tool-icon" viewBox="0 0 24 24">
+            <path
+              d="M12.5,8c-2.65,0-5.05,0.99-6.9,2.6L2,7v9h9l-3.62-3.62c1.39-1.16,3.16-1.88,5.12-1.88 c3.54,0,6.55,2.31,7.6,5.5l2.37-0.78C21.08,11.03,17.15,8,12.5,8z"
+              fill="black"
+            />
+          </svg>
+        </div>
+      </div>
+      <div id="brush-sizes">
+        <div class="brush-size brush-size-small active" id="brush-small">
+          <div class="brush-size-indicator"></div>
+        </div>
+        <div class="brush-size brush-size-medium" id="brush-medium">
+          <div class="brush-size-indicator"></div>
+        </div>
+        <div class="brush-size brush-size-large" id="brush-large">
+          <div class="brush-size-indicator"></div>
+        </div>
+      </div>
+      <div id="download-options">
+        <div class="download-button" id="download-white">
+          Download (White BG)
+        </div>
+        <div class="download-button" id="download-transparent">
+          Download (Transparent)
+        </div>
+      </div>
+      <div id="clear-container">
+        <div class="clear-button" id="clear-canvas">Clear Canvas</div>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // Canvas setup
+        const canvas = document.getElementById("drawing-canvas");
+        const ctx = canvas.getContext("2d");
+        let pixelSize = 4; // Default size of each "pixel" in our drawing
+
+        // Tools
+        const brushTool = document.getElementById("brush-tool");
+        const eraserTool = document.getElementById("eraser-tool");
+        const rotateTool = document.getElementById("rotate-tool");
+        const undoButton = document.getElementById("undo-button");
+        const downloadWhite = document.getElementById("download-white");
+        const downloadTransparent = document.getElementById(
+          "download-transparent"
+        );
+        const clearCanvas = document.getElementById("clear-canvas");
+
+        // Brush sizes
+        const brushSmall = document.getElementById("brush-small");
+        const brushMedium = document.getElementById("brush-medium");
+        const brushLarge = document.getElementById("brush-large");
+
+        // For undo functionality
+        const undoStack = [];
+        const maxUndoSteps = 10;
+
+        let currentTool = "brush";
+        let isDrawing = false;
+        let lastX = 0;
+        let lastY = 0;
+
+        // Initialize canvas size
+        function resizeCanvas() {
+          const container = document.getElementById("canvas-container");
+          canvas.width = container.clientWidth;
+          canvas.height = container.clientHeight;
+
+          // Clear with white background
+          ctx.fillStyle = "white";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.fillStyle = "black"; // Default drawing color
+
+          // Save initial state for undo
+          saveCanvasState();
+        }
+
+        // Setup initial canvas
+        resizeCanvas();
+        window.addEventListener("resize", resizeCanvas);
+
+        // Helper function to get pixel-aligned coordinates
+        function alignToPixel(coord) {
+          return Math.floor(coord / pixelSize) * pixelSize;
+        }
+
+        // Drawing functions
+        function startDrawing(e) {
+          // Save the current state before starting a new drawing action
+          saveCanvasState();
+
+          isDrawing = true;
+          const coords = getCoordinates(e);
+          lastX = alignToPixel(coords.x);
+          lastY = alignToPixel(coords.y);
+
+          // Draw a single pixel at the starting point
+          if (currentTool === "brush") {
+            ctx.fillStyle = "black";
+            ctx.fillRect(lastX, lastY, pixelSize, pixelSize);
+          } else if (currentTool === "eraser") {
+            ctx.clearRect(lastX, lastY, pixelSize, pixelSize);
+            // Redraw white to ensure it's not transparent
+            ctx.fillStyle = "white";
+            ctx.fillRect(lastX, lastY, pixelSize, pixelSize);
+            ctx.fillStyle = "black"; // Reset to black for next drawing
+          }
+        }
+
+        function draw(e) {
+          if (!isDrawing) return;
+
+          const coords = getCoordinates(e);
+          const x = alignToPixel(coords.x);
+          const y = alignToPixel(coords.y);
+
+          // Draw line between last point and current point
+          if (currentTool === "brush") {
+            drawPixelLine(lastX, lastY, x, y);
+          } else if (currentTool === "eraser") {
+            erasePixelLine(lastX, lastY, x, y);
+          }
+
+          lastX = x;
+          lastY = y;
+        }
+
+        function stopDrawing() {
+          isDrawing = false;
+        }
+
+        // Bresenham's line algorithm adapted for pixelated drawing
+        function drawPixelLine(x0, y0, x1, y1) {
+          ctx.fillStyle = "black";
+
+          const dx = Math.abs(x1 - x0);
+          const dy = Math.abs(y1 - y0);
+          const sx = x0 < x1 ? pixelSize : -pixelSize;
+          const sy = y0 < y1 ? pixelSize : -pixelSize;
+          let err = dx - dy;
+
+          while (true) {
+            ctx.fillRect(x0, y0, pixelSize, pixelSize);
+
+            if (x0 === x1 && y0 === y1) break;
+            let e2 = 2 * err;
+            if (e2 > -dy) {
+              err -= dy;
+              x0 += sx;
+            }
+            if (e2 < dx) {
+              err += dx;
+              y0 += sy;
+            }
+          }
+        }
+
+        // Same algorithm but for erasing
+        function erasePixelLine(x0, y0, x1, y1) {
+          ctx.fillStyle = "white";
+
+          const dx = Math.abs(x1 - x0);
+          const dy = Math.abs(y1 - y0);
+          const sx = x0 < x1 ? pixelSize : -pixelSize;
+          const sy = y0 < y1 ? pixelSize : -pixelSize;
+          let err = dx - dy;
+
+          while (true) {
+            ctx.fillRect(x0, y0, pixelSize, pixelSize);
+
+            if (x0 === x1 && y0 === y1) break;
+            let e2 = 2 * err;
+            if (e2 > -dy) {
+              err -= dy;
+              x0 += sx;
+            }
+            if (e2 < dx) {
+              err += dx;
+              y0 += sy;
+            }
+          }
+        }
+
+        // Get coordinates from mouse or touch event
+        function getCoordinates(event) {
+          let x, y;
+
+          if (event.type.includes("touch")) {
+            x = event.touches[0].clientX - canvas.getBoundingClientRect().left;
+            y = event.touches[0].clientY - canvas.getBoundingClientRect().top;
+          } else {
+            x = event.clientX - canvas.getBoundingClientRect().left;
+            y = event.clientY - canvas.getBoundingClientRect().top;
+          }
+
+          return {x, y};
+        }
+
+        // Rotate the drawing 90 degrees clockwise
+        function rotateDrawing() {
+          // Save state before rotation
+          saveCanvasState();
+
+          const tempCanvas = document.createElement("canvas");
+          const tempCtx = tempCanvas.getContext("2d");
+
+          tempCanvas.width = canvas.height;
+          tempCanvas.height = canvas.width;
+
+          // Translate and rotate
+          tempCtx.translate(tempCanvas.width / 2, tempCanvas.height / 2);
+          tempCtx.rotate(Math.PI / 2);
+          tempCtx.translate(-canvas.width / 2, -canvas.height / 2);
+
+          // Draw the original canvas onto the temp canvas
+          tempCtx.drawImage(canvas, 0, 0);
+
+          // Clear the original canvas
+          ctx.fillStyle = "white";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+          // Draw the rotated image back to the original canvas
+          // We need to account for the size difference
+          const offsetX = (canvas.width - canvas.height) / 2;
+          const offsetY = (canvas.height - canvas.width) / 2;
+
+          if (canvas.width >= canvas.height) {
+            ctx.drawImage(
+              tempCanvas,
+              0,
+              0,
+              tempCanvas.width,
+              tempCanvas.height,
+              offsetX,
+              0,
+              canvas.height,
+              canvas.width
+            );
+          } else {
+            ctx.drawImage(
+              tempCanvas,
+              0,
+              0,
+              tempCanvas.width,
+              tempCanvas.height,
+              0,
+              offsetY,
+              canvas.height,
+              canvas.width
+            );
+          }
+        }
+
+        // Download functions
+        function downloadWithWhiteBackground() {
+          const link = document.createElement("a");
+          link.download = "pictochat-drawing.png";
+          link.href = canvas.toDataURL("image/png");
+          link.click();
+        }
+
+        function downloadWithTransparentBackground() {
+          const tempCanvas = document.createElement("canvas");
+          const tempCtx = tempCanvas.getContext("2d");
+
+          tempCanvas.width = canvas.width;
+          tempCanvas.height = canvas.height;
+
+          // Copy the original canvas but make white pixels transparent
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const data = imageData.data;
+
+          for (let i = 0; i < data.length; i += 4) {
+            // If pixel is white (255, 255, 255), make it transparent
+            if (data[i] === 255 && data[i + 1] === 255 && data[i + 2] === 255) {
+              data[i + 3] = 0; // Set alpha to 0
+            }
+          }
+
+          tempCtx.putImageData(imageData, 0, 0);
+
+          const link = document.createElement("a");
+          link.download = "pictochat-drawing-transparent.png";
+          link.href = tempCanvas.toDataURL("image/png");
+          link.click();
+        }
+
+        // Tool selection
+        brushTool.addEventListener("click", function () {
+          setActiveTool("brush");
+        });
+
+        eraserTool.addEventListener("click", function () {
+          setActiveTool("eraser");
+        });
+
+        rotateTool.addEventListener("click", function () {
+          rotateDrawing();
+        });
+
+        clearCanvas.addEventListener("click", function () {
+          clearCanvasFunction();
+        });
+
+        undoButton.addEventListener("click", function () {
+          undoLastAction();
+        });
+
+        // Brush size selection
+        brushSmall.addEventListener("click", function () {
+          setBrushSize("small");
+        });
+
+        brushMedium.addEventListener("click", function () {
+          setBrushSize("medium");
+        });
+
+        brushLarge.addEventListener("click", function () {
+          setBrushSize("large");
+        });
+
+        function setActiveTool(tool) {
+          currentTool = tool;
+
+          // Update visual state
+          brushTool.classList.remove("active");
+          eraserTool.classList.remove("active");
+
+          if (tool === "brush") {
+            brushTool.classList.add("active");
+          } else if (tool === "eraser") {
+            eraserTool.classList.add("active");
+          }
+        }
+
+        function setBrushSize(size) {
+          // Update visual state
+          brushSmall.classList.remove("active");
+          brushMedium.classList.remove("active");
+          brushLarge.classList.remove("active");
+
+          if (size === "small") {
+            brushSmall.classList.add("active");
+            pixelSize = 4;
+          } else if (size === "medium") {
+            brushMedium.classList.add("active");
+            pixelSize = 8;
+          } else if (size === "large") {
+            brushLarge.classList.add("active");
+            pixelSize = 12;
+          }
+        }
+
+        // Save the current canvas state for undo
+        function saveCanvasState() {
+          // Save a copy of the current canvas
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          undoStack.push(imageData);
+
+          // Limit the undo stack size
+          if (undoStack.length > maxUndoSteps) {
+            undoStack.shift(); // Remove the oldest state
+          }
+        }
+
+        // Undo the last action
+        function undoLastAction() {
+          if (undoStack.length > 0) {
+            const previousState = undoStack.pop();
+            ctx.putImageData(previousState, 0, 0);
+          }
+        }
+
+        function clearCanvasFunction() {
+          // Save current state before clearing
+          saveCanvasState();
+
+          // Clear the canvas
+          ctx.fillStyle = "white";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.fillStyle = "black";
+        }
+
+        // Download buttons
+        downloadWhite.addEventListener("click", downloadWithWhiteBackground);
+        downloadTransparent.addEventListener(
+          "click",
+          downloadWithTransparentBackground
+        );
+
+        // Event listeners for drawing
+        canvas.addEventListener("mousedown", startDrawing);
+        canvas.addEventListener("mousemove", draw);
+        canvas.addEventListener("mouseup", stopDrawing);
+        canvas.addEventListener("mouseout", stopDrawing);
+
+        // Touch events for mobile
+        canvas.addEventListener("touchstart", function (e) {
+          e.preventDefault();
+          startDrawing(e);
+        });
+
+        canvas.addEventListener("touchmove", function (e) {
+          e.preventDefault();
+          draw(e);
+        });
+
+        canvas.addEventListener("touchend", stopDrawing);
+        canvas.addEventListener("touchcancel", stopDrawing);
+      });
+    </script>
+  </body>
+</html>
