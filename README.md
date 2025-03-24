@@ -63,6 +63,8 @@ This project is currently under development and works best on desktop. Mobile su
 
 ---
 
-<p align="center">
-  Made with ❤️ inspired by the nostalgic PictoChat from the Nintendo DS
-</p>
+<!-- markdownlint-disable MD033 -->
+<div align="center">
+  <p>Made with ❤️ by <a href="https://github.com/Duccioo">Duccioo</a> inspired by the nostalgic PictoChat from the Nintendo DS</p>
+</div>
+<!-- markdownlint-enable MD033 -->
