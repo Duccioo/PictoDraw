@@ -21,7 +21,7 @@ PictoDraw is a web application inspired by the classic PictoChat from the Ninten
 
 ## 🚀 How to Use
 
-1. Open the `chat.html` file in your browser
+1. Open the `index.html` file in your browser
 2. Use the brush to draw on the canvas
 3. Choose from different patterns and brush sizes
 4. Use the eraser to correct any mistakes

@@ -1,43 +1,43 @@
-name: Deploy Static Page
+name: Your github action
 
 on:
   push:
-    branches: [ main ]
-  workflow_dispatch:
-
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
+    branches:
+      # NOTE: You may want to limit the trigger branch to be "main" or "master" etc.
+      - '*'
 
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  publish:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Check out
+        # You may use a newer version of https://github.com/actions/checkout
         uses: actions/checkout@v4
-      
-      - name: Setup Pages
-        uses: actions/configure-pages@v3
-      
-      - name: Create build directory
-        run: mkdir -p build
-      
-      - name: Copy HTML file
-        run: cp src/chat.html build/index.html
-      
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v2
+
+      - name: Generate your content
+        run: echo "Optional placeholder. Put your project's static website generator command here."
+
+      - name: Publish current workdir (which contains generated content) to GitHub Pages
+        uses: rayluo/github-pages-overwriter@v1.3
+
         with:
-          path: 'build'
-      
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v2
+
+          # Optional.
+          #
+          # Default value "." means the root directory of your project will be published.
+          #
+          # You can use whatever directory your project uses,
+          # for example "wwwroot" (without leading "./").
+          # Such a directory does *not* have to already exist in your repo,
+          # it could be an output directory created dynamically
+          # by your static website builder.
+          source-directory: src
+
+          # Optional. Default value "gh-pages".
+          # It specifies the temporary branch which hosts the static website.
+          # Each build will REMOVE this branch and replace it with new content.
+          # (If you want to keep your old "gh-pages" branch,
+          # you should define a different target branch for this GPO action to work with.)
+          target-branch: gh-pages
