@@ -1,9 +1,9 @@
 # PictoDraw
-
+<!-- markdownlint-disable MD033 -->
 <p align="center">
   <img src="assets/logo_pictodraw.png" alt="PictoDraw Logo" width="400"/>
 </p>
-
+<!-- markdownlint-disable MD033 -->
 ## 📱 Project Information
 
 PictoDraw is a web application inspired by the classic PictoChat from the Nintendo DS. It allows you to create pixel art drawings and share them in a simulated chat, recreating the nostalgic experience of graphic communication on the Nintendo DS.
