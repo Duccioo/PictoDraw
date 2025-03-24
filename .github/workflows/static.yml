@@ -1,13 +1,13 @@
-name: Publish static website to GitHub Pages
+name: GitHub Pages Overwriter
 # This workflow will publish your static website to GitHub Pages
-# whenever you push to the "main" branch.
-# It uses the "rayluo/github-pages-overwriter" action to overwrite the content
+# by overwriting the content of a temporary branch.
+# It is triggered by a push to any branch of your repository.
 
 on:
   push:
     branches:
       # NOTE: You may want to limit the trigger branch to be "main" or "master" etc.
-      - 'main'
+      - '*'
 
 jobs:
   publish:
