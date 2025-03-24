@@ -8,6 +8,10 @@
 
 PictoDraw is a web application inspired by the classic PictoChat from the Nintendo DS. It allows you to create pixel art drawings and share them in a simulated chat, recreating the nostalgic experience of graphic communication on the Nintendo DS.
 
+## 🎮 Demo
+
+Check out the live demo of PictoDraw [here](https://duccioo.github.io/PictoDraw/).
+
 ## ✨ Current Features
 
 - 🎨 Pixel art style drawing canvas
