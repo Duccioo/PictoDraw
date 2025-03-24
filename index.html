@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PictoChat Drawing App</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <div id="app-container">
+      <div id="header">
+        PICTOCHAT
+      </div>
+      
+      <div id="status-bar">
+        <div id="username-display">Now entering ⊠: Chaz</div>
+      </div>
+      
+      <div id="chat-toggle">
+        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTcuNDEgMTUuNDFMMTIgMTAuODNMMTYuNTkgMTUuNDFMMTggMTRMMTIgOEw2IDE0TDcuNDEgMTUuNDFaIi8+PC9zdmc+" alt="Toggle Chat" class="chat-toggle-icon">
+      </div>
+      
+      <div id="chat-area">
+        <!-- Chat messages will appear here -->
+      </div>
+      
+      <div id="canvas-container">
+        <canvas id="drawing-canvas"></canvas>
+      </div>
+      
+      <div id="toolbar">
+        <div class="tool" id="brush-tool">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTcgMTQuN0wxNS44IDUuOUMxNi4xIDUuNiAxNi41IDUuNiAxNi44IDUuOUwxOC4xIDcuMkMxOC40IDcuNSAxOC40IDcuOSAxOC4xIDguMkw5LjMgMTdIMTJWMTlINlYxM0g4VjE0LjdaTTE4IDIwSDZWMjJIMThWMjBaIi8+PC9zdmc+" alt="Brush" class="tool-icon">
+        </div>
+        <div class="tool" id="eraser-tool">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTE1LjE0IDNDMTQuNjMgMyAxNC4xMiAzLjIgMTMuNzMgMy41OUwyLjU5IDE0LjczQzEuODEgMTUuNSAxLjgxIDE2Ljc3IDIuNTkgMTcuNTZMMy40NSAxOC40Mkg4LjE0TDIwLjE1IDYuNDFDMjAuOTMgNS42MyAyMC45MyA0LjM2IDIwLjE1IDMuNTlDMTkuNzYgMy4yIDE5LjI1IDMgMTguNzQgM0gxNS4xNE0xOC4yOCAxNy4zTDIxLjcgMTMuODhMMjIuNDIgMTQuNTlDMjIuOTcgMTUuMTUgMjIuNjYgMTYgMjEuODggMTZIMTguMjhWMTcuM00xMi44NiAxMS40MUwxMS40MSAxMi44NkwxNi41NiAxOEgyMS44OFYxNy4zTDEyLjg2IDExLjQxWiIvPjwvc3ZnPg==" alt="Eraser" class="tool-icon">
+        </div>
+        <div id="undo-button">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTEyLjUgOEMxMy4zIDggMTQuMSA4LjEgMTQuOCA4LjRMMTIuNSA1LjVWOE0xNy44IDExLjJDMTcuOSAxMS43IDE4IDEyLjMgMTggMTNDMTggMTcuNDEgMTQuNDEgMjEgMTAgMjFDNS41OSAyMSAyIDE3LjQxIDIgMTNDMiA4LjU5IDUuNTkgNSAxMCA1QzExLjQxIDUgMTIuNzUgNS40MyAxMy44NSA2LjE1TDExLjc4IDguMTdDMTEuMjEgOC4wNiAxMC42MSA4IDEwIDhDNy4yNCA4IDUgMTAuMjQgNSAxM0M1IDE1Ljc2IDcuMjQgMTggMTAgMThDMTIuNzYgMTggMTUgMTUuNzYgMTUgMTNDMTUgMTIuNiAxNC45NSAxMi4yMSAxNC44NCAxMS44NEwxNy44IDExLjJNMTkgM0wyMCA0VjhIMTZMMTkuMDggNC45NUMxNy42MSAzLjcgMTUuODYgMyAxNCAzQzEyLjMzIDMgMTAuNzYgMy41MyA5LjQyIDQuNDJMOCAzQzEwLjA4IDEuODYgMTIuMzggMSAxNSAxQzE2LjQxIDEgMTcuNzYgMS40MyAxOSAyLjNWM1oiLz48L3N2Zz4=" alt="Undo" class="tool-icon">
+        </div>
+        <div id="send-button" class="tool">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTIgMjFMMjMgMTJMMiAzVjEwTDE3IDEyTDIgMTRWMjFaIi8+PC9zdmc+" alt="Send" class="tool-icon">
+        </div>
+      </div>
+      
+      <div id="brush-sizes">
+        <div class="brush-size brush-size-small" id="brush-small">
+          <div class="brush-size-indicator"></div>
+        </div>
+        <div class="brush-size brush-size-medium" id="brush-medium">
+          <div class="brush-size-indicator"></div>
+        </div>
+        <div class="brush-size brush-size-large" id="brush-large">
+          <div class="brush-size-indicator"></div>
+        </div>
+      </div>
+      
+      <div id="download-options">
+        <div class="download-button" id="download-white">Download (White BG)</div>
+        <div class="download-button" id="download-transparent">Download (Transparent)</div>
+      </div>
+      
+      <div id="clear-container">
+        <div class="clear-button" id="clear-canvas">Clear Canvas</div>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
