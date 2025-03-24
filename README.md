@@ -1,68 +1,68 @@
 # PictoDraw
 
 <p align="center">
-  <img src="assets/logo.png" alt="PictoDraw Logo" width="200"/>
+  <img src="assets/logo_pictodraw.png" alt="PictoDraw Logo" width="400"/>
 </p>
 
-## 📱 Informazioni sul progetto
+## 📱 Project Information
 
-PictoDraw è un'applicazione web ispirata al classico PictoChat del Nintendo DS. Ti permette di creare disegni in stile pixel art e condividerli in una chat simulata, ricreando l'esperienza nostalgica della comunicazione grafica su Nintendo DS.
+PictoDraw is a web application inspired by the classic PictoChat from the Nintendo DS. It allows you to create pixel art drawings and share them in a simulated chat, recreating the nostalgic experience of graphic communication on the Nintendo DS.
 
-## ✨ Caratteristiche attuali
+## ✨ Current Features
 
-- 🎨 Canvas di disegno in stile pixel art
-- ✏️ Strumenti di base: pennello e gomma
-- 🔄 Funzione "Annulla" per correggere gli errori
-- 🔍 Tre dimensioni del pennello selezionabili
-- 📝 Cinque pattern di disegno (solido, incrociato, diagonale, puntini, linee)
-- 💾 Salvataggio dei disegni con sfondo bianco o trasparente
-- 💬 Area chat per la visualizzazione dei disegni inviati
-- 🧹 Pulizia del canvas con un click
+- 🎨 Pixel art style drawing canvas
+- ✏️ Basic tools: brush and eraser
+- 🔄 "Undo" function to correct mistakes
+- 🔍 Three selectable brush sizes
+- 📝 Five drawing patterns (solid, crosshatch, diagonal, dots, lines)
+- 💾 Save drawings with white or transparent background
+- 💬 Chat area for displaying sent drawings
+- 🧹 Clear the canvas with one click
 
-## 🚀 Come utilizzare
+## 🚀 How to Use
 
-1. Apri il file `chat.html` nel tuo browser
-2. Usa il pennello per disegnare sul canvas
-3. Scegli tra diversi pattern e dimensioni del pennello
-4. Usa la gomma per correggere eventuali errori
-5. Premi il pulsante "Send" (icona freccia) per inviare il disegno alla chat
-6. Scarica i tuoi disegni usando i pulsanti nella parte inferiore
+1. Open the `chat.html` file in your browser
+2. Use the brush to draw on the canvas
+3. Choose from different patterns and brush sizes
+4. Use the eraser to correct any mistakes
+5. Press the "Send" button (arrow icon) to send the drawing to the chat
+6. Download your drawings using the buttons at the bottom
 
-## 🔧 Tecnologie utilizzate
+## 🔧 Technologies Used
 
-- HTML5 Canvas per il disegno
-- JavaScript vanilla per la logica
-- CSS per lo stile retrò ispirato al Nintendo DS
+- HTML5 Canvas for drawing
+- Vanilla JavaScript for logic
+- CSS for the retro Nintendo DS-inspired style
 
-## 🖼️ Funzionalità di disegno
+## 🖼️ Drawing Features
 
-- **Strumenti**: Pennello e gomma
-- **Pattern**: Solido, incrociato, diagonale, puntini, linee
-- **Dimensioni**: Piccolo (4px), medio (8px), grande (12px)
-- **Undo**: Annulla l'ultima azione di disegno
-- **Salvataggio**: Scarica come PNG con sfondo bianco o trasparente
+- **Tools**: Brush and eraser
+- **Patterns**: Solid, crosshatch, diagonal, dots, lines
+- **Sizes**: Small (4px), medium (8px), large (12px)
+- **Undo**: Undo the last drawing action
+- **Save**: Download as PNG with white or transparent background
 
-## 📂 Struttura del progetto
+## 📂 Project Structure
 
-- `chat.html` - File principale dell'applicazione
-- `styles.css` - Stili e tema visivo del Nintendo DS
-- `script.js` - Logica di disegno e interazione
+- `chat.html` - Main application file
+- `styles.css` - Styles and visual theme of the Nintendo DS
+- `script.js` - Drawing and interaction logic
 
-## 🔮 Possibili sviluppi futuri
+## 🔮 Possible Future Developments
 
-- Aggiunta di più colori oltre al nero
-- Sistema di login utente
-- Chat in tempo reale tra più utenti
-- Temi personalizzabili
-- Supporto per dispositivi touch migliorato
-- Più strumenti di disegno e forme geometriche
+- Addition of more colors besides black
+- User login system
+- Real-time chat between multiple users
+- Customizable themes
+- Improved touch device support
+- More drawing tools and geometric shapes
 
-## 📝 Note
+## 📝 Notes
 
-Questo progetto è attualmente in fase di sviluppo e funziona meglio su desktop. Il supporto mobile è in corso di miglioramento.
+This project is currently under development and works best on desktop. Mobile support is being improved.
 
 ---
 
 <p align="center">
-  Fatto con ❤️ ispirandosi al nostalgico PictoChat del Nintendo DS
+  Made with ❤️ inspired by the nostalgic PictoChat from the Nintendo DS
 </p>
