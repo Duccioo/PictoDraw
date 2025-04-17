@@ -7,7 +7,10 @@ document.addEventListener("DOMContentLoaded", function () {
     icon.style.transform = chatArea.classList.contains("collapsed")
       ? "rotate(180deg)"
       : "";
+    // Call resizeCanvas after toggling collapse state
+    resizeCanvas();
   });
+
   // Canvas setup
   const canvas = document.getElementById("drawing-canvas");
   const ctx = canvas.getContext("2d");
@@ -20,35 +23,58 @@ document.addEventListener("DOMContentLoaded", function () {
   const sendButton = document.getElementById("send-button");
   const downloadWhite = document.getElementById("download-white");
   const downloadTransparent = document.getElementById("download-transparent");
+  const downloadSVGButton = document.getElementById("download-svg"); // SVG Button
   const clearCanvas = document.getElementById("clear-canvas");
+  const clearChatButton = document.getElementById("clear-chat"); // New Clear Chat Button
+  const brushTiny = document.getElementById("brush-tiny"); // New Tiny Brush Button
 
   let currentTool = "brush";
+  let currentColor = "black"; // New variable for current color
   let currentPattern = "solid"; // New variable for pattern type
   let isDrawing = false;
   let lastX = 0;
   let lastY = 0;
-  let username = "User";
+  let username = "Chaz ✨"; // Updated username with emoji
 
-  // Pattern definitions
+  // Updated Pattern definitions for dithering effects
   const patterns = {
-    solid: (x, y) => true,
-    cross: (x, y) => {
-      const xMod = Math.floor(x / pixelSize) % 3;
-      const yMod = Math.floor(y / pixelSize) % 3;
-      return xMod === 1 && yMod === 1;
-    },
-    diagonal: (x, y) => {
+    solid: (x, y) => true, // Always draw
+    checkerboard: (x, y) => {
+      // Renamed from diagonal
       const xMod = Math.floor(x / pixelSize);
       const yMod = Math.floor(y / pixelSize);
-      return (xMod + yMod) % 2 === 0;
+      return (xMod + yMod) % 2 === 0; // 50% checkerboard
     },
-    dots: (x, y) => {
+    dots_sparse: (x, y) => {
+      // Renamed from dots
+      const xMod = Math.floor(x / pixelSize) % 3; // Sparsier dots
+      const yMod = Math.floor(y / pixelSize) % 3;
+      return xMod === 0 && yMod === 0; // Approx 11% density
+    },
+    dots_medium: (x, y) => {
+      // New medium density dots
       const xMod = Math.floor(x / pixelSize) % 2;
       const yMod = Math.floor(y / pixelSize) % 2;
-      return xMod === 0 && yMod === 0;
+      return xMod === 0 && yMod === 0; // 25% density
     },
-    lines: (x, y) => {
-      return Math.floor(y / pixelSize) % 3 === 1;
+    lines_h: (x, y) => {
+      // Renamed from lines (Horizontal)
+      return Math.floor(y / pixelSize) % 2 === 0; // 50% horizontal lines
+    },
+    lines_v: (x, y) => {
+      // New Vertical lines
+      return Math.floor(x / pixelSize) % 2 === 0; // 50% vertical lines
+    },
+    bayer_2x2: (x, y) => {
+      // New 2x2 Bayer matrix (50% threshold)
+      const bayerMatrix = [
+        [0, 2],
+        [3, 1],
+      ];
+      const threshold = 1; // 50% fill (0 and 1)
+      const xMod = Math.floor(x / pixelSize) % 2;
+      const yMod = Math.floor(y / pixelSize) % 2;
+      return bayerMatrix[yMod][xMod] <= threshold;
     },
   };
 
@@ -61,12 +87,15 @@ document.addEventListener("DOMContentLoaded", function () {
   patternContainer.style.backgroundColor = "var(--button-color)";
   patternContainer.style.borderTop = "2px solid var(--border-color)";
 
+  // Updated pattern types array
   const patternTypes = [
     {id: "solid", label: "Solid"},
-    {id: "cross", label: "Cross"},
-    {id: "diagonal", label: "Diagonal"},
-    {id: "dots", label: "Dots"},
-    {id: "lines", label: "Lines"},
+    {id: "checkerboard", label: "Check"}, // Renamed
+    {id: "dots_sparse", label: "Dots S"}, // Renamed
+    {id: "dots_medium", label: "Dots M"}, // New
+    {id: "lines_h", label: "Lines H"}, // Renamed
+    {id: "lines_v", label: "Lines V"}, // New
+    {id: "bayer_2x2", label: "Bayer"}, // New
   ];
 
   patternTypes.forEach((pattern) => {
@@ -88,6 +117,25 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById(`pattern-${pattern}`).classList.add("active");
   }
 
+  // Add color selection functionality
+  const colorPalette = document.getElementById("color-palette");
+  const colorSwatches = colorPalette.querySelectorAll(".color-swatch");
+
+  colorSwatches.forEach((swatch) => {
+    swatch.addEventListener("click", function () {
+      currentColor = this.getAttribute("data-color");
+      // Update active state
+      colorSwatches.forEach((s) => s.classList.remove("active"));
+      this.classList.add("active");
+      // Ensure brush is selected when a color is picked
+      if (currentTool !== "brush") {
+        currentTool = "brush";
+        brushTool.classList.add("active");
+        eraserTool.classList.remove("active");
+      }
+    });
+  });
+
   // Brush sizes
   const brushSmall = document.getElementById("brush-small");
   const brushMedium = document.getElementById("brush-medium");
@@ -100,26 +148,69 @@ document.addEventListener("DOMContentLoaded", function () {
   // Chat elements
   const chatArea = document.getElementById("chat-area");
   const usernameDisplay = document.getElementById("username-display");
+  usernameDisplay.textContent = `Now entering ⊠: ${username}`; // Update display
 
   currentTool = "brush";
   isDrawing = false;
   lastX = 0;
   lastY = 0;
-  username = "DUCCIO"; // Default username
+
+  // --- Chat Persistence Functions ---
+  const chatStorageKey = "pictoDrawChatHistory";
+
+  function saveChatToLocalStorage() {
+    localStorage.setItem(chatStorageKey, chatArea.innerHTML);
+  }
+
+  function loadChatFromLocalStorage() {
+    const savedChat = localStorage.getItem(chatStorageKey);
+    if (savedChat) {
+      chatArea.innerHTML = savedChat;
+      // Re-attach event listeners to download buttons in loaded chat
+      attachDownloadListenersToChat();
+    }
+  }
+
+  // Helper to re-attach listeners after loading chat
+  function attachDownloadListenersToChat() {
+    const messageBubbles = chatArea.querySelectorAll(".chat-bubble");
+    messageBubbles.forEach((bubble) => {
+      const img = bubble.querySelector("img");
+      if (!img) return; // Skip if no image found
+
+      const whiteBtn = bubble.querySelector(
+        ".message-download-button:first-child"
+      );
+      const transBtn = bubble.querySelector(
+        ".message-download-button:last-child"
+      );
+
+      if (whiteBtn) {
+        whiteBtn.onclick = () => downloadMessageImage(img.src);
+      }
+      if (transBtn) {
+        transBtn.onclick = () => downloadMessageImageTransparent(img.src);
+      }
+    });
+  }
+  // --- End Chat Persistence Functions ---
 
   // Initialize canvas size
   function resizeCanvas() {
     const container = document.getElementById("canvas-container");
+    // Save current content before resizing
+    const currentImageData = ctx.getImageData(
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    );
+
     canvas.width = container.clientWidth;
     canvas.height = container.clientHeight;
 
-    // Clear with white background
-    ctx.fillStyle = "white";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "black"; // Default drawing color
-
-    // Save initial state for undo
-    saveCanvasState();
+    // Restore content after resizing (simple redraw, might distort if aspect ratio changes)
+    ctx.putImageData(currentImageData, 0, 0); // Try to restore previous content
   }
 
   // Setup initial canvas
@@ -145,26 +236,58 @@ document.addEventListener("DOMContentLoaded", function () {
     return {x, y};
   }
 
+  // Helper function to draw the brush shape applying the pattern
+  // (Used for sizes > 1px)
+  function drawPatternedBrushStroke(centerX, centerY) {
+    ctx.fillStyle = currentColor;
+    const radius = Math.floor(pixelSize / 2);
+    const startX = alignToPixel(centerX - radius);
+    const startY = alignToPixel(centerY - radius);
+    const endX = alignToPixel(centerX + radius - (pixelSize > 1 ? 1 : 0));
+    const endY = alignToPixel(centerY + radius - (pixelSize > 1 ? 1 : 0));
+
+    for (let blockX = startX; blockX <= endX; blockX += pixelSize) {
+      for (let blockY = startY; blockY <= endY; blockY += pixelSize) {
+        if (patterns[currentPattern](blockX, blockY)) {
+          ctx.fillRect(blockX, blockY, pixelSize, pixelSize);
+        }
+      }
+    }
+  }
+
+  // Helper function to draw a single pixel with pattern
+  // (Used for tiny brush)
+  function drawPatternedPixel(x, y) {
+    if (patterns[currentPattern](x, y)) {
+      ctx.fillStyle = currentColor;
+      // Bresenham's line algorithm adapted for pixelated drawing
+      ctx.fillRect(x, y, 1, 1); // Always 1x1 for tiny brush
+    }
+  }
+
   // Drawing functions
   function startDrawing(e) {
-    // Save the current state before starting a new drawing action
     saveCanvasState();
-
     isDrawing = true;
     const coords = getCoordinates(e);
-    lastX = alignToPixel(coords.x);
-    lastY = alignToPixel(coords.y);
+    // For tiny brush, use raw coordinates; otherwise, align
+    lastX = pixelSize === 1 ? Math.floor(coords.x) : alignToPixel(coords.x);
+    lastY = pixelSize === 1 ? Math.floor(coords.y) : alignToPixel(coords.y);
 
-    // Draw a single pixel at the starting point
     if (currentTool === "brush") {
-      ctx.fillStyle = "black";
-      ctx.fillRect(lastX, lastY, pixelSize, pixelSize);
+      if (pixelSize === 1) {
+        drawPatternedPixel(lastX, lastY); // Draw single pixel for tiny
+      } else {
+        drawPatternedBrushStroke(lastX, lastY); // Draw shape for others
+      }
     } else if (currentTool === "eraser") {
-      ctx.clearRect(lastX, lastY, pixelSize, pixelSize);
-      // Redraw white to ensure it's not transparent
+      // Eraser always uses pixelSize alignment
+      const eraseX = alignToPixel(coords.x);
+      const eraseY = alignToPixel(coords.y);
       ctx.fillStyle = "white";
-      ctx.fillRect(lastX, lastY, pixelSize, pixelSize);
-      ctx.fillStyle = "black"; // Reset to black for next drawing
+      ctx.fillRect(eraseX, eraseY, pixelSize, pixelSize);
+      lastX = eraseX; // Ensure eraser uses aligned coords
+      lastY = eraseY;
     }
   }
 
@@ -172,12 +295,24 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!isDrawing) return;
 
     const coords = getCoordinates(e);
-    const x = alignToPixel(coords.x);
-    const y = alignToPixel(coords.y);
+    // Align coordinates based on tool and size
+    let x, y;
+    if (currentTool === "brush" && pixelSize === 1) {
+      x = Math.floor(coords.x);
+      y = Math.floor(coords.y);
+    } else {
+      // Eraser or larger brushes use alignment
+      x = alignToPixel(coords.x);
+      y = alignToPixel(coords.y);
+    }
 
     // Draw line between last point and current point
     if (currentTool === "brush") {
-      drawPixelLine(lastX, lastY, x, y);
+      if (pixelSize === 1) {
+        drawPixelLineTiny(lastX, lastY, x, y); // Use tiny line function
+      } else {
+        drawPixelLine(lastX, lastY, x, y); // Use patterned shape line function
+      }
     } else if (currentTool === "eraser") {
       erasePixelLine(lastX, lastY, x, y);
     }
@@ -190,10 +325,8 @@ document.addEventListener("DOMContentLoaded", function () {
     isDrawing = false;
   }
 
-  // Bresenham's line algorithm adapted for pixelated drawing
+  // Bresenham's line algorithm - For patterned brush strokes (sizes > 1px)
   function drawPixelLine(x0, y0, x1, y1) {
-    ctx.fillStyle = "black";
-
     const dx = Math.abs(x1 - x0);
     const dy = Math.abs(y1 - y0);
     const sx = x0 < x1 ? pixelSize : -pixelSize;
@@ -201,9 +334,31 @@ document.addEventListener("DOMContentLoaded", function () {
     let err = dx - dy;
 
     while (true) {
-      if (patterns[currentPattern](x0, y0)) {
-        ctx.fillRect(x0, y0, pixelSize, pixelSize);
+      drawPatternedBrushStroke(x0, y0); // Draws the shape
+
+      if (x0 === x1 && y0 === y1) break;
+      let e2 = 2 * err;
+      if (e2 > -dy) {
+        err -= dy;
+        x0 += sx;
       }
+      if (e2 < dx) {
+        err += dx;
+        y0 += sy;
+      }
+    }
+  }
+
+  // Bresenham's line algorithm - For tiny brush (1x1 pixels)
+  function drawPixelLineTiny(x0, y0, x1, y1) {
+    const dx = Math.abs(x1 - x0);
+    const dy = Math.abs(y1 - y0);
+    const sx = x0 < x1 ? 1 : -1; // Step is always 1 for tiny
+    const sy = y0 < y1 ? 1 : -1; // Step is always 1 for tiny
+    let err = dx - dy;
+
+    while (true) {
+      drawPatternedPixel(x0, y0); // Draw single patterned pixel
 
       if (x0 === x1 && y0 === y1) break;
       let e2 = 2 * err;
@@ -220,6 +375,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Bresenham's line algorithm adapted for erasing
   function erasePixelLine(x0, y0, x1, y1) {
+    ctx.fillStyle = "white";
+
     const dx = Math.abs(x1 - x0);
     const dy = Math.abs(y1 - y0);
     const sx = x0 < x1 ? pixelSize : -pixelSize;
@@ -227,10 +384,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let err = dx - dy;
 
     while (true) {
-      ctx.clearRect(x0, y0, pixelSize, pixelSize);
-      ctx.fillStyle = "white";
       ctx.fillRect(x0, y0, pixelSize, pixelSize);
-      ctx.fillStyle = "black"; // Reset to black for next drawing
 
       if (x0 === x1 && y0 === y1) break;
       let e2 = 2 * err;
@@ -259,6 +413,10 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   // Brush size selection
+  brushTiny.addEventListener("click", function () {
+    // Listener for Tiny Brush
+    setBrushSize("tiny");
+  });
   brushSmall.addEventListener("click", function () {
     setBrushSize("small");
   });
@@ -272,11 +430,15 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   function setBrushSize(size) {
+    brushTiny.classList.remove("active");
     brushSmall.classList.remove("active");
     brushMedium.classList.remove("active");
     brushLarge.classList.remove("active");
 
-    if (size === "small") {
+    if (size === "tiny") {
+      brushTiny.classList.add("active");
+      pixelSize = 1; // Set pixelSize to 1 for tiny
+    } else if (size === "small") {
       brushSmall.classList.add("active");
       pixelSize = 4;
     } else if (size === "medium") {
@@ -286,17 +448,16 @@ document.addEventListener("DOMContentLoaded", function () {
       brushLarge.classList.add("active");
       pixelSize = 12;
     }
+    ctx.fillStyle = currentTool === "brush" ? currentColor : "white";
   }
 
   // Save the current canvas state for undo
   function saveCanvasState() {
-    // Save a copy of the current canvas
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     undoStack.push(imageData);
 
-    // Limit the undo stack size
     if (undoStack.length > maxUndoSteps) {
-      undoStack.shift(); // Remove the oldest state
+      undoStack.shift();
     }
   }
 
@@ -309,49 +470,55 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function clearCanvasFunction() {
-    // Save current state before clearing
     saveCanvasState();
 
-    // Clear the canvas
     ctx.fillStyle = "white";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "black";
+    ctx.fillStyle = currentColor;
   }
+
+  // Clear Chat Button Functionality
+  clearChatButton.addEventListener("click", function () {
+    if (
+      confirm(
+        "Are you sure you want to clear the entire chat history? This cannot be undone."
+      )
+    ) {
+      chatArea.innerHTML = ""; // Clear the chat display
+      saveChatToLocalStorage(); // Update local storage
+    }
+  });
 
   // Send the drawing to chat
   function sendDrawing() {
-    // Create a new chat bubble
     const chatBubble = document.createElement("div");
     chatBubble.className = "chat-bubble";
 
-    // Add username
     const usernameElement = document.createElement("div");
     usernameElement.className = "username";
     usernameElement.textContent = username;
     chatBubble.appendChild(usernameElement);
 
-    // Create an image from the canvas
     const img = document.createElement("img");
     img.src = canvas.toDataURL("image/png");
     img.style.width = "100%";
     chatBubble.appendChild(img);
 
-    // Add download buttons
     const downloadButtons = document.createElement("div");
     downloadButtons.className = "message-download-buttons";
 
-    // White background download button
     const downloadWhiteBtn = document.createElement("div");
     downloadWhiteBtn.className = "message-download-button";
     downloadWhiteBtn.innerHTML =
       '<img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTUgMjBIMTlWMThINVYyMFpNMTkgOUgxNVYzSDlWOUg1TDEyIDE2TDE5IDlaIi8+PC9zdmc+" class="message-download-icon">';
+    // Assign onclick directly here
     downloadWhiteBtn.onclick = () => downloadMessageImage(img.src);
 
-    // Transparent background download button
     const downloadTransparentBtn = document.createElement("div");
     downloadTransparentBtn.className = "message-download-button";
     downloadTransparentBtn.innerHTML =
       '<img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTUgMjBIMTlWMThINVYyMFpNMTkgOUgxNVYzSDlWOUg1TDEyIDE2TDE5IDlaIi8+PC9zdmc+" class="message-download-icon">';
+    // Assign onclick directly here
     downloadTransparentBtn.onclick = () =>
       downloadMessageImageTransparent(img.src);
 
@@ -359,12 +526,12 @@ document.addEventListener("DOMContentLoaded", function () {
     downloadButtons.appendChild(downloadTransparentBtn);
     chatBubble.appendChild(downloadButtons);
 
-    // Add to chat area
     chatArea.appendChild(chatBubble);
     chatArea.scrollTop = chatArea.scrollHeight;
 
-    // Clear canvas after sending
-    clearCanvasFunction();
+    saveChatToLocalStorage(); // Save chat after adding new message
+
+    clearCanvasFunction(); // Clear canvas after sending
   }
 
   function downloadMessageImage(imgSrc) {
@@ -423,14 +590,12 @@ document.addEventListener("DOMContentLoaded", function () {
     tempCanvas.width = canvas.width;
     tempCanvas.height = canvas.height;
 
-    // Copy the original canvas but make white pixels transparent
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const data = imageData.data;
 
     for (let i = 0; i < data.length; i += 4) {
-      // If pixel is white (255, 255, 255), make it transparent
       if (data[i] === 255 && data[i + 1] === 255 && data[i + 2] === 255) {
-        data[i + 3] = 0; // Set alpha to 0
+        data[i + 3] = 0;
       }
     }
 
@@ -442,26 +607,52 @@ document.addEventListener("DOMContentLoaded", function () {
     link.click();
   }
 
-  // Set up keyboard functionality
-  function setupKeyboard() {
-    const keyboard = document.getElementById("keyboard");
-    if (!keyboard) return;
+  // --- SVG Download Function ---
+  function downloadAsSVG() {
+    let svgContent = `<svg width="${canvas.width}" height="${canvas.height}" xmlns="http://www.w3.org/2000/svg">`;
+    svgContent += `<rect width="100%" height="100%" fill="white"/>`; // Background
 
-    const keys = keyboard.querySelectorAll(".key");
-    keys.forEach((key) => {
-      key.addEventListener("click", function () {
-        // Handle key press
-        const keyValue = this.getAttribute("data-key");
-        if (keyValue === "SPACE") {
-          // Handle space
-        } else if (keyValue === "ENTER") {
-          sendDrawing();
-        } else if (keyValue) {
-          // Handle regular key
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+
+    // Iterate over each pixel (1x1 grid)
+    for (let y = 0; y < canvas.height; y++) {
+      for (let x = 0; x < canvas.width; x++) {
+        const index = (y * canvas.width + x) * 4;
+        const r = data[index];
+        const g = data[index + 1];
+        const b = data[index + 2];
+        const a = data[index + 3];
+
+        // If pixel is not fully transparent white
+        if (!(r === 255 && g === 255 && b === 255 && a === 255)) {
+          // If pixel is not fully transparent
+          if (a > 0) {
+            let fill = `rgb(${r},${g},${b})`;
+            let opacity = a / 255;
+            svgContent += `<rect x="${x}" y="${y}" width="1" height="1" fill="${fill}"`;
+            if (opacity < 1) {
+              svgContent += ` fill-opacity="${opacity.toFixed(3)}"`;
+            }
+            svgContent += `/>`;
+          }
         }
-      });
-    });
+      }
+    }
+
+    svgContent += `</svg>`;
+
+    const blob = new Blob([svgContent], {type: "image/svg+xml;charset=utf-8"});
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.download = "pictochat-drawing.svg";
+    link.href = url;
+    link.click();
+
+    URL.revokeObjectURL(url); // Clean up
   }
+  // --- End SVG Download Function ---
 
   // Event listeners
   undoButton.addEventListener("click", undoLastAction);
@@ -470,7 +661,6 @@ document.addEventListener("DOMContentLoaded", function () {
     sendButton.addEventListener("click", sendDrawing);
   }
 
-  // Download buttons
   if (downloadWhite) {
     downloadWhite.addEventListener("click", downloadWithWhiteBackground);
   }
@@ -480,14 +670,15 @@ document.addEventListener("DOMContentLoaded", function () {
       downloadWithTransparentBackground
     );
   }
+  if (downloadSVGButton) {
+    downloadSVGButton.addEventListener("click", downloadAsSVG);
+  }
 
-  // Event listeners for drawing
   canvas.addEventListener("mousedown", startDrawing);
   canvas.addEventListener("mousemove", draw);
   canvas.addEventListener("mouseup", stopDrawing);
   canvas.addEventListener("mouseout", stopDrawing);
 
-  // Touch events for mobile
   canvas.addEventListener("touchstart", function (e) {
     e.preventDefault();
     startDrawing(e);
@@ -501,8 +692,10 @@ document.addEventListener("DOMContentLoaded", function () {
   canvas.addEventListener("touchend", stopDrawing);
   canvas.addEventListener("touchcancel", stopDrawing);
 
-  // Initialize
-  setupKeyboard();
-  setBrushSize("small"); // Set default brush size
-  brushTool.classList.add("active"); // Set default tool
+  loadChatFromLocalStorage(); // Load chat on startup
+  setBrushSize("small"); // Default to small brush size
+  brushTool.classList.add("active");
+  document
+    .querySelector('#color-palette .color-swatch[data-color="black"]')
+    .classList.add("active");
 });

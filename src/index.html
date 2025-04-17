@@ -3,17 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PictoChat Drawing App</title>
+    <title>🎨 PictoDraw - DS Style 🎮</title>
     <link rel="stylesheet" href="styles.css">
   </head>
   <body>
     <div id="app-container">
       <div id="header">
-        PICTOCHAT
+        🎨 PICTODRAW 🎮
       </div>
       
       <div id="status-bar">
-        <div id="username-display">Now entering ⊠: Chaz</div>
+        <div id="username-display">Now entering ⊠: Chaz ✨</div>
       </div>
       
       <div id="chat-toggle">
@@ -43,7 +43,19 @@
         </div>
       </div>
       
+      <div id="color-palette">
+        <div class="color-swatch active" data-color="black" style="background-color: black;"></div>
+        <div class="color-swatch" data-color="red" style="background-color: red;"></div>
+        <div class="color-swatch" data-color="blue" style="background-color: blue;"></div>
+        <div class="color-swatch" data-color="green" style="background-color: green;"></div>
+        <div class="color-swatch" data-color="#ff7f00" style="background-color: #ff7f00;"></div> <!-- Orange -->
+        <div class="color-swatch" data-color="#ffff00" style="background-color: #ffff00;"></div> <!-- Yellow -->
+      </div>
+      
       <div id="brush-sizes">
+        <div class="brush-size brush-size-tiny" id="brush-tiny"> <!-- New Tiny Brush -->
+          <div class="brush-size-indicator"></div>
+        </div>
         <div class="brush-size brush-size-small" id="brush-small">
           <div class="brush-size-indicator"></div>
         </div>
@@ -56,12 +68,14 @@
       </div>
       
       <div id="download-options">
-        <div class="download-button" id="download-white">Download (White BG)</div>
-        <div class="download-button" id="download-transparent">Download (Transparent)</div>
+        <div class="download-button" id="download-white">Download (PNG White)</div>
+        <div class="download-button" id="download-transparent">Download (PNG Transp)</div>
+        <div class="download-button" id="download-svg">Download (SVG)</div> <!-- New SVG Download Button -->
       </div>
       
       <div id="clear-container">
         <div class="clear-button" id="clear-canvas">Clear Canvas</div>
+        <div class="clear-button" id="clear-chat">Clear Chat</div> <!-- New Clear Chat Button -->
       </div>
     </div>
 
